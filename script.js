@@ -9,11 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-
-
-
-
-
+// About fade-in animation
 document.addEventListener("DOMContentLoaded", function () {
     const aboutSection = document.querySelector(".about");
     const observer = new IntersectionObserver(
@@ -47,59 +43,19 @@ circles.forEach(circle => {
     circle.style.setProperty('--percent', percent);
 });
 
-
-// contact 
-
+// Show success message after form submit using FormSubmit redirect URL
 document.addEventListener("DOMContentLoaded", function () {
-    const form = document.getElementById("contactForm");
-    const statusEl = document.getElementById("contactStatus");
-    if (!form) return;
+    const urlParams = new URLSearchParams(window.location.search);
 
-    form.addEventListener("submit", async function (e) {
-        e.preventDefault();
-
-        const payload = {
-            name: document.getElementById("name").value,
-            email: document.getElementById("email").value,
-            phone: document.getElementById("phone").value,
-            subject: document.getElementById("subject").value,
-            message: document.getElementById("message").value,
-        };
-
-        try {
-            statusEl.style.display = "block";
-            statusEl.style.color = "#00FFA3";
-            statusEl.textContent = "Sending...";
-
-            const res = await fetch("http://localhost:5000/api/contact", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload),
-            });
-
-            const data = await res.json();
-
-            if (res.ok) {
-                statusEl.textContent = "Message sent successfully!";
-                form.reset();
-            } else {
-                statusEl.style.color = "tomato";
-                statusEl.textContent = data.error || "Failed to send message.";
-            }
-        } catch (err) {
-            console.error(err);
-            statusEl.style.display = "block";
-            statusEl.style.color = "tomato";
-            statusEl.textContent = "Something went wrong. Please try again.";
-        }
-    });
+    if (urlParams.has("success")) {
+        const statusEl = document.getElementById("contactStatus");
+        statusEl.style.display = "block";
+        statusEl.style.color = "#00FFA3";
+        statusEl.textContent = "Message sent successfully!";
+    }
 });
 
-
-
-
-
-
+// Mobile nav
 const menuIcon = document.getElementById('menu-icon');
 const navLinks = document.getElementById('nav-links');
 const menuIconInner = menuIcon.querySelector('i');
