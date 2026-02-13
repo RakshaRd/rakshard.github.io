@@ -719,7 +719,12 @@ body.light-theme .navbar {
         height: 550px;
         width: 100%;
     }
+
+    .project-image {
+        height: 550px;
+    }
 }
+
 
 .project-card:hover .project-image img {
     transform: scale(1.1);
