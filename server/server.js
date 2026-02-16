@@ -92,10 +92,13 @@ app.post("/api/contact", async (req, res) => {
 
         res.json({ success: true });
     } catch (err) {
-        console.error("Contact error ❌", err);
-        res.status(500).json({ success: false });
-    }
-});
+    console.error("Contact error ❌", err.message);
+    res.status(500).json({
+        success: false,
+        error: err.message
+    });
+}
+
 
 // 🔹 TEST EMAIL ROUTE
 app.get("/test", async (req, res) => {
