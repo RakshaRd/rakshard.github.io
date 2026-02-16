@@ -10,7 +10,10 @@ const nodemailer = require("nodemailer");
 const app = express();
 
 // ---------- MIDDLEWARE ----------
-app.use(cors());
+app.use(cors({
+    origin: "*",              // allow all frontend domains
+    methods: ["GET", "POST"],
+}));
 app.use(express.json());
 
 // ---------- MONGODB CONNECTION ----------
@@ -24,7 +27,6 @@ const contactSchema = new mongoose.Schema(
     {
         name: String,
         email: String,
-        // phone: String,
         subject: String,
         message: String,
     },
@@ -33,7 +35,7 @@ const contactSchema = new mongoose.Schema(
 
 const ContactMessage = mongoose.model("ContactMessage", contactSchema);
 
-// ---------- NODEMAILER TRANSPORT (GMAIL) ----------
+// ---------- NODEMAILER TRANSPORT ----------
 const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
@@ -43,7 +45,7 @@ const transporter = nodemailer.createTransport({
 });
 
 // ---------- VERIFY EMAIL CONFIG ----------
-transporter.verify((error, success) => {
+transporter.verify((error) => {
     if (error) {
         console.error("EMAIL CONFIG ERROR ❌", error);
     } else {
@@ -53,7 +55,7 @@ transporter.verify((error, success) => {
 
 // ---------- ROUTES ----------
 app.get("/", (req, res) => {
-    res.send("Portfolio API is running");
+    res.send("Portfolio API is running 🚀");
 });
 
 // 🔹 CONTACT FORM API
@@ -71,8 +73,7 @@ app.post("/api/contact", async (req, res) => {
             text:
                 `You received a new message:\n\n` +
                 `Name: ${name}\n` +
-                `Email: ${email}\n` +
-                // `Phone: ${phone}\n\n` +
+                `Email: ${email}\n\n` +
                 `Message:\n${message}`,
             replyTo: email,
         });
@@ -83,28 +84,27 @@ app.post("/api/contact", async (req, res) => {
         await ContactMessage.create({
             name,
             email,
-            // phone,
             subject,
             message,
         });
 
         console.log("Saved to MongoDB ✅");
 
-        res.json({ success: true, message: "Message sent successfully" });
+        res.json({ success: true });
     } catch (err) {
         console.error("Contact error ❌", err);
-        res.status(500).json({ success: false, error: "Failed to send message" });
+        res.status(500).json({ success: false });
     }
 });
 
-// 🔹 TEST EMAIL ROUTE (IMPORTANT)
+// 🔹 TEST EMAIL ROUTE
 app.get("/test", async (req, res) => {
     try {
         await transporter.sendMail({
             from: process.env.SMTP_USER,
             to: process.env.OWNER_EMAIL,
             subject: "Test Email",
-            text: "This confirms Nodemailer is working 🎉",
+            text: "Backend email is working 🎉",
         });
 
         res.send("Test email sent successfully ✅");
