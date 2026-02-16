@@ -11,7 +11,7 @@ const app = express();
 
 // ---------- MIDDLEWARE ----------
 app.use(cors({
-    origin: "*",              // allow all frontend domains
+    origin: "*",
     methods: ["GET", "POST"],
 }));
 app.use(express.json());
@@ -44,7 +44,7 @@ const transporter = nodemailer.createTransport({
     },
 });
 
-// ---------- VERIFY EMAIL CONFIG ----------
+// ---------- VERIFY EMAIL ----------
 transporter.verify((error) => {
     if (error) {
         console.error("EMAIL CONFIG ERROR ❌", error);
@@ -58,29 +58,26 @@ app.get("/", (req, res) => {
     res.send("Portfolio API is running 🚀");
 });
 
-// 🔹 CONTACT FORM API
+// 🔹 CONTACT FORM API (FIXED)
 app.post("/api/contact", async (req, res) => {
     const { name, email, subject, message } = req.body;
 
     console.log("Incoming contact:", req.body);
 
     try {
-        // 1️⃣ Send email to owner
+        // Send email
         await transporter.sendMail({
             from: `"Portfolio Contact" <${process.env.SMTP_USER}>`,
             to: process.env.OWNER_EMAIL,
             subject: subject || "New message from portfolio",
             text:
-                `You received a new message:\n\n` +
                 `Name: ${name}\n` +
                 `Email: ${email}\n\n` +
                 `Message:\n${message}`,
             replyTo: email,
         });
 
-        console.log("Email sent to owner ✅");
-
-        // 2️⃣ Save to MongoDB
+        // Save to MongoDB
         await ContactMessage.create({
             name,
             email,
@@ -88,17 +85,15 @@ app.post("/api/contact", async (req, res) => {
             message,
         });
 
-        console.log("Saved to MongoDB ✅");
-
         res.json({ success: true });
     } catch (err) {
-    console.error("Contact error ❌", err.message);
-    res.status(500).json({
-        success: false,
-        error: err.message
-    });
-}
-
+        console.error("Contact error ❌", err.message);
+        res.status(500).json({
+            success: false,
+            error: err.message,
+        });
+    }
+});
 
 // 🔹 TEST EMAIL ROUTE
 app.get("/test", async (req, res) => {
@@ -109,7 +104,6 @@ app.get("/test", async (req, res) => {
             subject: "Test Email",
             text: "Backend email is working 🎉",
         });
-
         res.send("Test email sent successfully ✅");
     } catch (err) {
         console.error(err);
