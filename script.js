@@ -1,12 +1,6 @@
 // ===== Typing Animation =====
 const typingText = document.querySelector('.typing-text');
-const phrases = [
-    'Frontend Developer',
-    'Backend Developer',
-    'web developer'
-    // 'Problem Solver',
-    // 'Quick Learner'
-];
+const phrases = ['Frontend Developer', 'Backend Developer', 'Web Developer'];
 let phraseIndex = 0;
 let charIndex = 0;
 let isDeleting = false;
@@ -14,18 +8,13 @@ let isDeleting = false;
 function typeEffect() {
     const currentPhrase = phrases[phraseIndex];
 
-    if (isDeleting) {
-        typingText.textContent = currentPhrase.substring(0, charIndex - 1);
-        charIndex--;
-    } else {
-        typingText.textContent = currentPhrase.substring(0, charIndex + 1);
-        charIndex++;
-    }
+    typingText.textContent = isDeleting
+        ? currentPhrase.substring(0, charIndex--)
+        : currentPhrase.substring(0, ++charIndex);
 
     if (!isDeleting && charIndex === currentPhrase.length) {
         isDeleting = true;
-        setTimeout(typeEffect, 2000);
-        return;
+        return setTimeout(typeEffect, 2000);
     }
 
     if (isDeleting && charIndex === 0) {
@@ -33,11 +22,8 @@ function typeEffect() {
         phraseIndex = (phraseIndex + 1) % phrases.length;
     }
 
-    const typingSpeed = isDeleting ? 50 : 100;
-    setTimeout(typeEffect, typingSpeed);
+    setTimeout(typeEffect, isDeleting ? 50 : 100);
 }
-
-// Start typing animation
 setTimeout(typeEffect, 1000);
 
 // ===== Navigation =====
@@ -46,317 +32,173 @@ const navToggle = document.getElementById('navToggle');
 const navMenu = document.getElementById('navMenu');
 const navLinks = document.querySelectorAll('.nav-link');
 
-// Navbar scroll effect
 window.addEventListener('scroll', () => {
-    if (window.scrollY > 50) {
-        navbar.classList.add('scrolled');
-    } else {
-        navbar.classList.remove('scrolled');
-    }
+    navbar.classList.toggle('scrolled', window.scrollY > 50);
 });
 
-// Mobile menu toggle
 navToggle.addEventListener('click', () => {
     navMenu.classList.toggle('active');
     navToggle.classList.toggle('active');
 });
 
-// Close mobile menu on link click
-navLinks.forEach(link => {
+navLinks.forEach(link =>
     link.addEventListener('click', () => {
         navMenu.classList.remove('active');
         navToggle.classList.remove('active');
-    });
-});
+    })
+);
 
-// Active nav link on scroll
+// ===== Active Nav =====
 const sections = document.querySelectorAll('section[id]');
-
 function updateActiveLink() {
     const scrollY = window.pageYOffset;
-
     sections.forEach(section => {
-        const sectionHeight = section.offsetHeight;
-        const sectionTop = section.offsetTop - 100;
-        const sectionId = section.getAttribute('id');
+        const top = section.offsetTop - 100;
+        const height = section.offsetHeight;
+        const id = section.getAttribute('id');
 
-        if (scrollY > sectionTop && scrollY <= sectionTop + sectionHeight) {
+        if (scrollY > top && scrollY <= top + height) {
             navLinks.forEach(link => {
-                link.classList.remove('active');
-                if (link.getAttribute('href') === `#${sectionId}`) {
-                    link.classList.add('active');
-                }
+                link.classList.toggle('active', link.getAttribute('href') === `#${id}`);
             });
         }
     });
 }
-
 window.addEventListener('scroll', updateActiveLink);
 
 // ===== Theme Toggle =====
 const themeToggle = document.getElementById('themeToggle');
 const body = document.body;
-
-// Check for saved theme preference
-const currentTheme = localStorage.getItem('theme') || 'dark';
-if (currentTheme === 'light') {
+if (localStorage.getItem('theme') === 'light') {
     body.classList.add('light-theme');
     themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
 }
 
 themeToggle.addEventListener('click', () => {
     body.classList.toggle('light-theme');
-
-    if (body.classList.contains('light-theme')) {
-        themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
-        localStorage.setItem('theme', 'light');
-    } else {
-        themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
-        localStorage.setItem('theme', 'dark');
-    }
+    const isLight = body.classList.contains('light-theme');
+    localStorage.setItem('theme', isLight ? 'light' : 'dark');
+    themeToggle.innerHTML = isLight
+        ? '<i class="fas fa-sun"></i>'
+        : '<i class="fas fa-moon"></i>';
 });
 
 // ===== Scroll Animations =====
-const observerOptions = {
-    threshold: 0.1,
-    rootMargin: '0px 0px -50px 0px'
-};
+const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => entry.isIntersecting && entry.target.classList.add('visible'));
+}, { threshold: 0.1 });
 
-const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            entry.target.classList.add('visible');
-        }
-    });
-}, observerOptions);
-
-// Observe all sections
 document.querySelectorAll('section').forEach(section => {
     section.classList.add('fade-in');
     observer.observe(section);
 });
 
-// ===== Skill Bars Animation =====
-const skillBars = document.querySelectorAll('.skill-progress');
-
-const skillObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            const progress = entry.target.getAttribute('data-progress');
-            entry.target.style.width = progress + '%';
-            skillObserver.unobserve(entry.target);
-        }
-    });
-}, { threshold: 0.5 });
-
-skillBars.forEach(bar => {
-    skillObserver.observe(bar);
+// ===== Skill Bars =====
+document.querySelectorAll('.skill-progress').forEach(bar => {
+    bar.style.width = bar.getAttribute('data-progress') + '%';
 });
 
 // ===== Project Filtering =====
 const filterBtns = document.querySelectorAll('.filter-btn');
 const projectCards = document.querySelectorAll('.project-card');
 
-filterBtns.forEach(btn => {
+filterBtns.forEach(btn =>
     btn.addEventListener('click', () => {
-        // Remove active class from all buttons
         filterBtns.forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-
-        const filter = btn.getAttribute('data-filter');
+        const filter = btn.dataset.filter;
 
         projectCards.forEach(card => {
-            if (filter === 'all') {
-                card.style.display = 'block';
-                setTimeout(() => {
-                    card.style.opacity = '1';
-                    card.style.transform = 'scale(1)';
-                }, 10);
-            } else {
-                const categories = card.getAttribute('data-category');
-                if (categories.includes(filter)) {
-                    card.style.display = 'block';
-                    setTimeout(() => {
-                        card.style.opacity = '1';
-                        card.style.transform = 'scale(1)';
-                    }, 10);
-                } else {
-                    card.style.opacity = '0';
-                    card.style.transform = 'scale(0.8)';
-                    setTimeout(() => {
-                        card.style.display = 'none';
-                    }, 300);
-                }
-            }
+            const show = filter === 'all' || card.dataset.category.includes(filter);
+            card.style.display = show ? 'block' : 'none';
         });
-    });
-});
+    })
+);
 
 // ===== Contact Form =====
 const contactForm = document.getElementById('contactForm');
 const formGroups = document.querySelectorAll('.form-group');
 
-// Form validation
 function validateEmail(email) {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(email);
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
 function showError(input, message) {
-    const formGroup = input.parentElement;
-    const errorMessage = formGroup.querySelector('.error-message');
-    formGroup.classList.add('error');
-    errorMessage.textContent = message;
+    const group = input.parentElement;
+    group.classList.add('error');
+    group.querySelector('.error-message').textContent = message;
 }
 
 function clearError(input) {
-    const formGroup = input.parentElement;
-    const errorMessage = formGroup.querySelector('.error-message');
-    formGroup.classList.remove('error');
-    errorMessage.textContent = '';
+    const group = input.parentElement;
+    group.classList.remove('error');
+    group.querySelector('.error-message').textContent = '';
 }
 
-// Real-time validation
+// Live validation
 formGroups.forEach(group => {
     const input = group.querySelector('input, textarea');
-
-    input.addEventListener('blur', () => {
-        if (input.value.trim() === '') {
-            showError(input, 'This field is required');
-        } else if (input.type === 'email' && !validateEmail(input.value)) {
-            showError(input, 'Please enter a valid email');
-        } else {
-            clearError(input);
-        }
-    });
-
-    input.addEventListener('input', () => {
-        if (input.value.trim() !== '') {
-            clearError(input);
-        }
-    });
+    input.addEventListener('input', () => clearError(input));
 });
 
-// Form submission
+// ===== REAL FORM SUBMISSION =====
 contactForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const formData = new FormData(contactForm);
-    const data = Object.fromEntries(formData);
-    let isValid = true;
+    const data = Object.fromEntries(new FormData(contactForm));
+    let valid = true;
 
-    // Validate all fields
     Object.keys(data).forEach(key => {
         const input = contactForm.querySelector(`[name="${key}"]`);
-        if (data[key].trim() === '') {
+        if (!data[key].trim()) {
             showError(input, 'This field is required');
-            isValid = false;
+            valid = false;
         } else if (key === 'email' && !validateEmail(data[key])) {
-            showError(input, 'Please enter a valid email');
-            isValid = false;
+            showError(input, 'Invalid email');
+            valid = false;
         }
     });
 
-    if (!isValid) return;
+    if (!valid) return;
 
-    // Show loading state
     const submitBtn = contactForm.querySelector('.btn');
     const formStatus = contactForm.querySelector('.form-status');
     submitBtn.classList.add('loading');
     formStatus.style.display = 'none';
 
-    // Simulate form submission (replace with actual API call)
-    setTimeout(() => {
-        submitBtn.classList.remove('loading');
-        formStatus.className = 'form-status success';
-        formStatus.textContent = 'Message sent successfully! I\'ll get back to you soon.';
-        contactForm.reset();
+    try {
+        const res = await fetch('http://localhost:5000/api/contact', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
 
-        // Hide success message after 5 seconds
-        setTimeout(() => {
-            formStatus.style.display = 'none';
-        }, 5000);
-    }, 2000);
+        const result = await res.json();
+        submitBtn.classList.remove('loading');
+
+        if (result.success) {
+            formStatus.className = 'form-status success';
+            formStatus.textContent = '✅ Message sent successfully!';
+            contactForm.reset();
+        } else {
+            throw new Error('Failed');
+        }
+    } catch {
+        submitBtn.classList.remove('loading');
+        formStatus.className = 'form-status error';
+        formStatus.textContent = '❌ Server error. Try again later.';
+    }
+
+    formStatus.style.display = 'block';
 });
 
 // ===== Smooth Scroll =====
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function (e) {
+document.querySelectorAll('a[href^="#"]').forEach(anchor =>
+    anchor.addEventListener('click', e => {
         e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
-            const offsetTop = target.offsetTop - 70;
-            window.scrollTo({
-                top: offsetTop,
-                behavior: 'smooth'
-            });
-        }
-    });
-});
+        document.querySelector(anchor.getAttribute('href'))
+            ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    })
+);
 
-// ===== Parallax Effect =====
-window.addEventListener('scroll', () => {
-    const scrolled = window.pageYOffset;
-    const heroBackground = document.querySelector('.hero-background');
-    if (heroBackground) {
-        heroBackground.style.transform = `translateY(${scrolled * 0.5}px)`;
-    }
-});
-
-// ===== Initialize =====
-document.addEventListener('DOMContentLoaded', () => {
-    // Add initial animations
-    setTimeout(() => {
-        document.querySelector('.hero-content').style.opacity = '1';
-    }, 100);
-
-    // Preload images
-    const images = document.querySelectorAll('img');
-    images.forEach(img => {
-        const src = img.getAttribute('src');
-        if (src) {
-            const preloadImg = new Image();
-            preloadImg.src = src;
-        }
-    });
-});
-
-// ===== Performance Optimization =====
-// Debounce function for scroll events
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
-
-// Apply debounce to scroll handlers
-window.addEventListener('scroll', debounce(updateActiveLink, 100));
-
-// ===== Accessibility =====
-// Keyboard navigation for project cards
-projectCards.forEach(card => {
-    card.setAttribute('tabindex', '0');
-    card.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            const link = card.querySelector('.project-link');
-            if (link) link.click();
-        }
-    });
-});
-
-// Focus trap for mobile menu
-navMenu.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && navMenu.classList.contains('active')) {
-        navMenu.classList.remove('active');
-        navToggle.classList.remove('active');
-        navToggle.focus();
-    }
-});
-
-console.log('Portfolio loaded successfully! 🚀');
+console.log('Portfolio loaded successfully 🚀');

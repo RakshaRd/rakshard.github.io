@@ -16,15 +16,15 @@ app.use(express.json());
 // ---------- MONGODB CONNECTION ----------
 mongoose
     .connect(process.env.MONGO_URI)
-    .then(() => console.log("MongoDB connected"))
-    .catch((err) => console.error("MongoDB error:", err.message));
+    .then(() => console.log("MongoDB connected ✅"))
+    .catch((err) => console.error("MongoDB error ❌", err.message));
 
 // ---------- SCHEMA & MODEL ----------
 const contactSchema = new mongoose.Schema(
     {
         name: String,
         email: String,
-        phone: String,
+        // phone: String,
         subject: String,
         message: String,
     },
@@ -33,15 +33,22 @@ const contactSchema = new mongoose.Schema(
 
 const ContactMessage = mongoose.model("ContactMessage", contactSchema);
 
-// ---------- NODEMAILER TRANSPORT ----------
+// ---------- NODEMAILER TRANSPORT (GMAIL) ----------
 const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT) || 587,
-    secure: false, // true for 465, false for 587
+    service: "gmail",
     auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
     },
+});
+
+// ---------- VERIFY EMAIL CONFIG ----------
+transporter.verify((error, success) => {
+    if (error) {
+        console.error("EMAIL CONFIG ERROR ❌", error);
+    } else {
+        console.log("EMAIL READY ✅");
+    }
 });
 
 // ---------- ROUTES ----------
@@ -49,54 +56,66 @@ app.get("/", (req, res) => {
     res.send("Portfolio API is running");
 });
 
+// 🔹 CONTACT FORM API
 app.post("/api/contact", async (req, res) => {
-    const { name, email, phone, subject, message } = req.body;
+    const { name, email, subject, message } = req.body;
 
-    console.log("Incoming contact:", { name, email, phone, subject, message });
+    console.log("Incoming contact:", req.body);
 
     try {
-        // 1) Send email to owner
-        const mailOptions = {
+        // 1️⃣ Send email to owner
+        await transporter.sendMail({
             from: `"Portfolio Contact" <${process.env.SMTP_USER}>`,
             to: process.env.OWNER_EMAIL,
             subject: subject || "New message from portfolio",
             text:
-                `You received a new message from your portfolio site:\n\n` +
+                `You received a new message:\n\n` +
                 `Name: ${name}\n` +
                 `Email: ${email}\n` +
-                `Phone: ${phone}\n\n` +
-                `Message:\n${message}\n`,
-            replyTo: email || undefined,
-        };
+                // `Phone: ${phone}\n\n` +
+                `Message:\n${message}`,
+            replyTo: email,
+        });
 
-        await transporter.sendMail(mailOptions);
-        console.log("Email sent to owner");
+        console.log("Email sent to owner ✅");
 
-        // 2) Try to save to MongoDB (do not fail request if DB has issue)
-        try {
-            const doc = await ContactMessage.create({
-                name,
-                email,
-                phone,
-                subject,
-                message,
-            });
-            console.log("Saved in MongoDB with id:", doc._id);
-        } catch (dbErr) {
-            console.error("Mongo save error:", dbErr.message);
-            // We just log it; no error returned to client
-        }
+        // 2️⃣ Save to MongoDB
+        await ContactMessage.create({
+            name,
+            email,
+            // phone,
+            subject,
+            message,
+        });
 
-        // 3) Success response
-        res.json({ success: true });
+        console.log("Saved to MongoDB ✅");
+
+        res.json({ success: true, message: "Message sent successfully" });
     } catch (err) {
-        console.error("Contact error:", err);
-        res.status(500).json({ error: err.message || "Failed to send message" });
+        console.error("Contact error ❌", err);
+        res.status(500).json({ success: false, error: "Failed to send message" });
+    }
+});
+
+// 🔹 TEST EMAIL ROUTE (IMPORTANT)
+app.get("/test", async (req, res) => {
+    try {
+        await transporter.sendMail({
+            from: process.env.SMTP_USER,
+            to: process.env.OWNER_EMAIL,
+            subject: "Test Email",
+            text: "This confirms Nodemailer is working 🎉",
+        });
+
+        res.send("Test email sent successfully ✅");
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Email failed ❌");
     }
 });
 
 // ---------- START SERVER ----------
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-    console.log("Server running on port", PORT);
+    console.log(`Server running on port ${PORT}`);
 });
