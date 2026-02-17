@@ -172,7 +172,7 @@ contactForm.addEventListener('submit', function (e) {
 
    emailjs.send(
     "service_o4ucdz1",
-    "hbzyp48",
+    "template_lj0chyv",
     {
         name: data.name,
         email: data.email,
