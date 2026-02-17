@@ -170,16 +170,18 @@ contactForm.addEventListener('submit', function (e) {
     submitBtn.classList.add('loading');
     formStatus.style.display = 'none';
 
-    emailjs.send(
-        "service_o4ucdz1",
-        "hbzyp48",
-        {
-            name: data.name,
-            email: data.email,
-            subject: data.subject,
-            message: data.message,
-        }
-    ).then(() => {
+   emailjs.send(
+    "service_o4ucdz1",
+    "template_1jochvy",
+    {
+        name: data.name,
+        email: data.email,
+        subject: data.subject,
+        message: data.message,
+        time: new Date().toLocaleString()
+    }
+)
+.then(() => {
         submitBtn.classList.remove('loading');
         formStatus.className = 'form-status success';
         formStatus.textContent = '✅ Message sent successfully!';
