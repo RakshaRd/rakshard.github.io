@@ -1,4 +1,4 @@
-// ===== Typing Animation =====
+// ================= Typing Animation =================
 const typingText = document.querySelector('.typing-text');
 const phrases = ['Frontend Developer', 'Backend Developer', 'Web Developer'];
 let phraseIndex = 0;
@@ -7,7 +7,6 @@ let isDeleting = false;
 
 function typeEffect() {
     const currentPhrase = phrases[phraseIndex];
-
     typingText.textContent = isDeleting
         ? currentPhrase.substring(0, charIndex--)
         : currentPhrase.substring(0, ++charIndex);
@@ -26,7 +25,7 @@ function typeEffect() {
 }
 setTimeout(typeEffect, 1000);
 
-// ===== Navigation =====
+// ================= Navigation =================
 const navbar = document.getElementById('navbar');
 const navToggle = document.getElementById('navToggle');
 const navMenu = document.getElementById('navMenu');
@@ -48,7 +47,7 @@ navLinks.forEach(link =>
     })
 );
 
-// ===== Active Nav =====
+// ================= Active Nav =================
 const sections = document.querySelectorAll('section[id]');
 function updateActiveLink() {
     const scrollY = window.pageYOffset;
@@ -66,9 +65,10 @@ function updateActiveLink() {
 }
 window.addEventListener('scroll', updateActiveLink);
 
-// ===== Theme Toggle =====
+// ================= Theme Toggle =================
 const themeToggle = document.getElementById('themeToggle');
 const body = document.body;
+
 if (localStorage.getItem('theme') === 'light') {
     body.classList.add('light-theme');
     themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
@@ -83,9 +83,11 @@ themeToggle.addEventListener('click', () => {
         : '<i class="fas fa-moon"></i>';
 });
 
-// ===== Scroll Animations =====
+// ================= Scroll Animations =================
 const observer = new IntersectionObserver(entries => {
-    entries.forEach(entry => entry.isIntersecting && entry.target.classList.add('visible'));
+    entries.forEach(entry => {
+        if (entry.isIntersecting) entry.target.classList.add('visible');
+    });
 }, { threshold: 0.1 });
 
 document.querySelectorAll('section').forEach(section => {
@@ -93,12 +95,12 @@ document.querySelectorAll('section').forEach(section => {
     observer.observe(section);
 });
 
-// ===== Skill Bars =====
+// ================= Skill Bars =================
 document.querySelectorAll('.skill-progress').forEach(bar => {
     bar.style.width = bar.getAttribute('data-progress') + '%';
 });
 
-// ===== Project Filtering =====
+// ================= Project Filtering =================
 const filterBtns = document.querySelectorAll('.filter-btn');
 const projectCards = document.querySelectorAll('.project-card');
 
@@ -106,8 +108,8 @@ filterBtns.forEach(btn =>
     btn.addEventListener('click', () => {
         filterBtns.forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        const filter = btn.dataset.filter;
 
+        const filter = btn.dataset.filter;
         projectCards.forEach(card => {
             const show = filter === 'all' || card.dataset.category.includes(filter);
             card.style.display = show ? 'block' : 'none';
@@ -115,7 +117,7 @@ filterBtns.forEach(btn =>
     })
 );
 
-// ===== Contact Form =====
+// ================= Contact Form (EmailJS) =================
 const contactForm = document.getElementById('contactForm');
 const formGroups = document.querySelectorAll('.form-group');
 
@@ -141,8 +143,8 @@ formGroups.forEach(group => {
     input.addEventListener('input', () => clearError(input));
 });
 
-// ===== REAL FORM SUBMISSION =====
-contactForm.addEventListener('submit', async (e) => {
+// ===== EMAILJS SUBMISSION =====
+contactForm.addEventListener('submit', function (e) {
     e.preventDefault();
 
     const data = Object.fromEntries(new FormData(contactForm));
@@ -163,41 +165,39 @@ contactForm.addEventListener('submit', async (e) => {
 
     const submitBtn = contactForm.querySelector('.btn');
     const formStatus = contactForm.querySelector('.form-status');
+
     submitBtn.classList.add('loading');
     formStatus.style.display = 'none';
 
-    try {
-        const res = await fetch('http://localhost:5000/api/contact', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        });
-
-        const result = await res.json();
-        submitBtn.classList.remove('loading');
-
-        if (result.success) {
-            formStatus.className = 'form-status success';
-            formStatus.textContent = '✅ Message sent successfully!';
-            contactForm.reset();
-        } else {
-            throw new Error('Failed');
+    emailjs.send(
+        "YOUR_SERVICE_ID",
+        "YOUR_TEMPLATE_ID",
+        {
+            name: data.name,
+            email: data.email,
+            subject: data.subject,
+            message: data.message,
         }
-    } catch {
+    ).then(() => {
+        submitBtn.classList.remove('loading');
+        formStatus.className = 'form-status success';
+        formStatus.textContent = '✅ Message sent successfully!';
+        formStatus.style.display = 'block';
+        contactForm.reset();
+    }).catch(() => {
         submitBtn.classList.remove('loading');
         formStatus.className = 'form-status error';
-        formStatus.textContent = '❌ Server error. Try again later.';
-    }
-
-    formStatus.style.display = 'block';
+        formStatus.textContent = '❌ Failed to send message.';
+        formStatus.style.display = 'block';
+    });
 });
 
-// ===== Smooth Scroll =====
+// ================= Smooth Scroll =================
 document.querySelectorAll('a[href^="#"]').forEach(anchor =>
     anchor.addEventListener('click', e => {
         e.preventDefault();
         document.querySelector(anchor.getAttribute('href'))
-            ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            ?.scrollIntoView({ behavior: 'smooth' });
     })
 );
 
