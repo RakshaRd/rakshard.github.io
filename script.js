@@ -1,3 +1,4 @@
+document.addEventListener("DOMContentLoaded", function () {
 // ================= Typing Animation =================
 const typingText = document.querySelector('.typing-text');
 const phrases = ['Frontend Developer', 'Backend Developer', 'Web Developer'];
@@ -202,3 +203,4 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor =>
 );
 
 console.log('Portfolio loaded successfully 🚀');
+});
