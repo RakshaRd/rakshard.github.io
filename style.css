@@ -250,6 +250,7 @@ body.light-theme .navbar {
 }
 
 /* ===== Hero Section ===== */
+
 .hero {
     position: relative;
     min-height: 100vh;
@@ -627,21 +628,12 @@ body.light-theme .navbar {
     margin-bottom: var(--spacing-xl);
 }
 
-.tech-icons {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: var(--spacing-lg);
-}
-
 .tech-icon {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: var(--spacing-sm);
     padding: var(--spacing-lg);
-    background: var(--background);
-    border-radius: var(--radius-lg);
-    transition: all var(--transition-base);
 }
 
 .tech-icon:hover {
@@ -658,6 +650,86 @@ body.light-theme .navbar {
     font-size: var(--font-size-sm);
     font-weight: 600;
 }
+
+.tech-slider {
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+    padding: 20px 0;
+}
+
+.tech-track {
+    display: flex;
+    gap: 50px;
+    width: max-content;
+    animation: techScroll 18s linear infinite;
+}
+
+.tech-track:hover {
+    animation-play-state: paused;
+}
+
+.tech-icon {
+    min-width: 120px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.tech-icon i {
+    font-size: 3.5rem;
+    color: var(--primary);
+    margin-bottom: 10px;
+}
+
+.tech-icon:hover {
+    transform: translateY(-10px) scale(1.1);
+}
+
+@keyframes techScroll {
+    from {
+        transform: translateX(0);
+    }
+
+    to {
+        transform: translateX(-50%);
+    }
+}
+
+.tech-icon {
+    animation: float 3s ease-in-out infinite;
+}
+
+.tech-icon:nth-child(2) {
+    animation-delay: .2s;
+}
+
+.tech-icon:nth-child(3) {
+    animation-delay: .4s;
+}
+
+.tech-icon:nth-child(4) {
+    animation-delay: .6s;
+}
+
+.tech-icon:nth-child(5) {
+    animation-delay: .8s;
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-12px);
+    }
+}
+
+
+
+
 
 /* ===== Projects Section ===== */
 .project-filters {
@@ -1189,7 +1261,4 @@ body.light-theme .navbar {
         flex-direction: column;
     }
 
-    .tech-icons {
-        grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-    }
 }
